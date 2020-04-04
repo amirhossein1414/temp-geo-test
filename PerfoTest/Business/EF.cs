@@ -15,6 +15,7 @@ namespace PerfoTest.Business
         {
             using (var ctx = new GeoContext())
             {
+                
                 var list = new List<SuperMarket>();
                 for (int i = 1; i < 10; i++)
                 {
@@ -23,11 +24,12 @@ namespace PerfoTest.Business
                     //var location = DbGeography.PointFromText($"Point({lng} {lat})", 4326);
                     //var super = new SuperMarket() { Content = "" + i, GeoData = location };
                     var super = new SuperMarket();
-                    list.Add(super);
+                    //list.Add(super);
                 }
 
                 ctx.SuperMarkets.AddRange(list);
                 ctx.SaveChanges();
+                
             }
         }
     }

@@ -17,13 +17,16 @@ namespace PerfoTest
     {
         static void Main(string[] args)
         {
+            var ef = new EF();
+            ef.CreateDataBase();
+
             var helper = new Helper();
             using (SqlConnection sqlConn = new SqlConnection(GeoContext.ConnectionString))
             {
                 sqlConn.Open();
                 var sw = new Stopwatch();
                 sw.Start();
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 10000; i++)
                 {
                     helper.InsertBulk(sqlConn);
                     Console.WriteLine(i);
