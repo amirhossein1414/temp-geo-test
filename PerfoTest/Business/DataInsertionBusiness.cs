@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 
 namespace PerfoTest.Business
 {
-    public class Helper
+    public class DataInsertionBusiness
     {
         Random random = new Random();
         static string content;

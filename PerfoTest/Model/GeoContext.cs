@@ -10,7 +10,7 @@ namespace PerfoTest.Model
     public class GeoContext : DbContext
     {
         public readonly static string ConnectionString =
-            "data source=192.168.30.5;initial catalog = geo;  persist security info=True;user id = sa; password=!@#123qwe;MultipleActiveResultSets=True;App=EntityFramework";
+            "data source=192.168.30.112;initial catalog = geo;  persist security info=True;user id = sa; password=!@#123qwe;MultipleActiveResultSets=True;App=EntityFramework";
         //"data source=localhost;initial catalog=geo; Trusted_Connection=True;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework";
         public GeoContext() : base(ConnectionString)
         {

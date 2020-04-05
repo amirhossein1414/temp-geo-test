@@ -64,8 +64,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Business\Business.cs" />
+    <Compile Include="Business\DataInsertionBusiness.cs" />
+    <Compile Include="Business\DataMaker.cs" />
     <Compile Include="Business\EF.cs" />
+    <Compile Include="Business\RequestMaker.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\GeoContext.cs" />
     <Compile Include="Model\SuperMarket.cs" />
