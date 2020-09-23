@@ -17,8 +17,11 @@ namespace PerfoTest
     {
         static void Main(string[] args)
         {
-            var reqMaker = new RequestMaker();
-            reqMaker.CreateFakeSqlRequest();
+            //var reqMaker = new RequestMaker();
+            //reqMaker.CreateFakeSqlRequest();
+
+            var psql = new PostgresGeoBusiness();
+            psql.TestConnection();
         }
     }
 }

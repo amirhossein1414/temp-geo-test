@@ -9,6 +9,6 @@ namespace PerfoTest.Model
     public class PostgresItem
     {
         public Guid id;
-        public 
+        public string title;
     }
 }
