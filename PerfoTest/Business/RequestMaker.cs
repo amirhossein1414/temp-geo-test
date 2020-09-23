@@ -94,20 +94,25 @@ namespace PerfoTest.Business
             //    " WITH(INDEX(\"PK_dbo.SuperMarkets\"))" +
             //    $" where id = {newId}";
 
-            var sqlDeclaration = "DECLARE @tehranZone geometry;" +
-                "SET @tehranZone = geometry::STPolyFromText('POLYGON ((51.35833740234375 35.73703779932528," +
-                "51.359710693359375 35.67626300279665," +
-                "51.40571594238281 35.646137228802424," +
-                "51.44554138183594 35.68351380631503," +
-                "51.44279479980469 35.73982452242507," +
-                "51.402969360351555 35.762114795721," +
-                "51.35833740234375 35.73703779932528))', 0); ";
+            //var sqlDeclaration = "DECLARE @tehranZone geometry;" +
+            //    "SET @tehranZone = geometry::STPolyFromText('POLYGON ((51.35833740234375 35.73703779932528," +
+            //    "51.359710693359375 35.67626300279665," +
+            //    "51.40571594238281 35.646137228802424," +
+            //    "51.44554138183594 35.68351380631503," +
+            //    "51.44279479980469 35.73982452242507," +
+            //    "51.402969360351555 35.762114795721," +
+            //    "51.35833740234375 35.73703779932528))', 0); ";
+
+            //var sqlSelect = "select top 1 * from SuperMarkets s " +
+            //                "WITH(INDEX(\"SpatialIndex-20200405-013341\"))" +
+            //                "where @tehranZone.STIntersects(s.GeoData) = 1 ";
+
 
             var sqlSelect = "select top 1 * from SuperMarkets s " +
-                            "WITH(INDEX(\"SpatialIndex-20200405-013341\"))" +
-                            "where @tehranZone.STIntersects(s.GeoData) = 1 ";
+                           "WITH(INDEX(\"SpatialIndex-20200405-013341\"))" +
+                           "where s.GeoData.STEquals(s.GeoData) = 1 ";
 
-            var sqlQuery = sqlDeclaration + sqlSelect;
+            var sqlQuery =/* sqlDeclaration +*/ sqlSelect;
 
             SqlCommand sqlCommand = new SqlCommand(sqlQuery, sqlConn);
             using (SqlDataReader dataReader = sqlCommand.ExecuteReader())

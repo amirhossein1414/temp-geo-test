@@ -11,7 +11,7 @@ namespace PerfoTest.Business
         public void MakeData()
         {
             var ef = new EF();
-            ef.CreateDataBase();
+            //ef.CreateDataBase();
 
             var helper = new DataInsertionBusiness();
             using (SqlConnection sqlConn = new SqlConnection(GeoContext.ConnectionString))
