@@ -12,22 +12,24 @@ namespace PerfoTest.Business
     {
         public static HttpClient client = new HttpClient();
         public static List<long> EllapsedTimes = new List<long>();
+        public static List<HttpResponseMessage> Responses = new List<HttpResponseMessage>();
         public static Task<HttpResponseMessage> SendRequest()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            var result = client.GetAsync("http://localhost:82/api/layer");
+            var result = client.GetAsync("http://localhost:6715/api/layer");
             result.ContinueWith((x) =>
             {
                 stopwatch.Stop();
                 var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
                 EllapsedTimes.Add(totalEllapsedTime);
+                Responses.Add(x.Result);
             });
 
             return result;
         }
 
-        public static void SendParallel()
+        public async static void SendParallel()
         {
             var count = 30;
             var totalTime = new Stopwatch();
@@ -57,6 +59,16 @@ namespace PerfoTest.Business
 
             //var totalEllapsedTime = totalTime.ElapsedMilliseconds; ;
             //Console.WriteLine("Ellapsed {0} miliseconds or {1} seconds.", totalEllapsedTime, (float)totalEllapsedTime / 1000);
+
+
+
+            //foreach (var response in Responses)
+            //{
+            //    Console.WriteLine($"****Reponse*****");
+            //    Console.WriteLine(response);
+            //    j++;
+            //    Console.WriteLine();
+            //}
 
             Console.ReadLine();
         }
