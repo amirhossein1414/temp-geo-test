@@ -238,6 +238,7 @@
     <Content Include="json-data\super-market-new-york.json" />
     <Content Include="json-data\super-sant-luise.json" />
     <Content Include="json-data\super-washington.json" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />

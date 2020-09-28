@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PerfoTest.Business.Postgres
 {
-    public class QueryMaker
+    public static class QueryMaker
     {
-        public string GetPolygonQueryString(params PostgresStringPoint[] points)
+        public static string GetPolygonQueryString(List<PostgresStringPoint> points)
         {
             var polygonStringFirstPart = "ST_GeomFromText('POLYGON((";
             var polygonStringMiddlePart = "";
 
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < points.Count; i++)
             {
                 if (i > 0)
                 {
@@ -28,11 +24,11 @@ namespace PerfoTest.Business.Postgres
             return polygonString;
         }
 
-        public string GetSearchWithinPolygonQueryString(string tableName, string columnName, string polygon)
+        public static string GetSearchWithinPolygonQueryString(string tableName, string columnName, string polygon)
         {
-            var query = $"select content from {tableName} where ST_Contains(ST_GeomFromText('{polygon}" +
-                $"), ST_GeomFromText(concat('Point','(',{tableName}.{columnName}[0],' ',{tableName}.{columnName}[1] , ')'))) " +
-                $"limit 2000";
+            var query = $"select id,content from {tableName} where ST_Contains({polygon}" +
+                $", ST_GeomFromText(concat('Point','(',{tableName}.{columnName}[0],' ',{tableName}.{columnName}[1] , ')'))) " +
+                $"limit 200";
 
 
 
