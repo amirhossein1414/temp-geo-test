@@ -39,7 +39,7 @@ namespace PerfoTest.Business
             };
 
             var polygonString = QueryMaker.GetPolygonQueryString(points);
-            var queryString = QueryMaker.GetSearchWithinPolygonQueryString("geotable", "geodata", polygonString);
+            var queryString = QueryMaker.GetSearchWithinPolygonQueryString("geotable", "geodata", polygonString,"1");
 
             var sql = "SELECT id,content from geotable limit 10";
             using (var cmd = new NpgsqlCommand(queryString, sqlConn))

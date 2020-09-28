@@ -102,6 +102,7 @@
     <Compile Include="Business\DataInsertionBusiness.cs" />
     <Compile Include="Business\DataMaker.cs" />
     <Compile Include="Business\EF.cs" />
+    <Compile Include="Business\GisApiRequestMaker.cs" />
     <Compile Include="Business\PostgresGeoBusiness.cs" />
     <Compile Include="Business\Postgres\PostgresPoint.cs" />
     <Compile Include="Business\Postgres\QueryMaker.cs" />

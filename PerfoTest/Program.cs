@@ -20,7 +20,9 @@ namespace PerfoTest
             //var reqMaker = new RequestMaker();
             //reqMaker.CreateFakeSqlRequest();
 
-            PostgresGeoBusiness.ReadLayer();
+            //PostgresGeoBusiness.ReadLayer();
+
+            GisApiRequestMaker.SendParallel();
         }
     }
 }

@@ -24,11 +24,14 @@ namespace PerfoTest.Business.Postgres
             return polygonString;
         }
 
-        public static string GetSearchWithinPolygonQueryString(string tableName, string columnName, string polygon)
+        public static string GetSearchWithinPolygonQueryString(string tableName,
+            string columnName,
+            string polygon,
+            string limit)
         {
             var query = $"select id,content from {tableName} where ST_Contains({polygon}" +
                 $", ST_GeomFromText(concat('Point','(',{tableName}.{columnName}[0],' ',{tableName}.{columnName}[1] , ')'))) " +
-                $"limit 200";
+                $"limit {limit}";
 
 
 
