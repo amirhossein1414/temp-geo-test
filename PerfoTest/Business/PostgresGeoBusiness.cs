@@ -1,4 +1,5 @@
 ﻿using Microsoft.SqlServer.Types;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Npgsql;
 using NpgsqlTypes;
@@ -82,7 +83,7 @@ namespace PerfoTest.Business
             };
         }
 
-        public static void ReadLayer()
+        public static string ReadLayer()
         {
             var items = new List<PostgresItem>();
             var maker = new QueryMaker();
@@ -102,7 +103,8 @@ namespace PerfoTest.Business
                 }
             }
 
-            var sz = JsonConvert.SerializeObject(sampleGroupInstance);
+            var jsonResult = JsonConvert.SerializeObject(items);
+            return jsonResult;
         }
 
     }

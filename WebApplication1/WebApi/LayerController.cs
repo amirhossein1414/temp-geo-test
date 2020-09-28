@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerfoTest.Business;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,7 +11,8 @@ namespace WebApplication1.WebApi
     { 
         public string Get()
         {
-            return "Hello World";
+            var result = PostgresGeoBusiness.ReadLayer();
+            return result;
         }
     }
 }
