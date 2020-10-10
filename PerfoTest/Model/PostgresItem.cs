@@ -13,7 +13,7 @@ namespace PerfoTest.Model
     {
         public string id;
         public string title;
-        public NpgsqlPoint /*DbGeography*/ geodata;
+        public NpgsqlPoint /*NpgsqlPoint*/ /*DbGeography*/ geodata;
         public string content;
     }
 }

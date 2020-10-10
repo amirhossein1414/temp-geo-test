@@ -37,20 +37,28 @@ namespace PerfoTest.Business
 
         public static void InsertBulk()
         {
-            var copyHelper = new PostgreSQLCopyHelper<PostgresItem>("public", "geotable")
+            var copyHelper = new PostgreSQLCopyHelper<PostgresItem>("public", "supermarkets")
                                  .Map("id", x => x.id, NpgsqlDbType.Text)
                                  .Map("title", x => x.title, NpgsqlDbType.Text)
-                                 .Map("geodata", x => x.geodata, NpgsqlDbType.Point)
+                                 .Map("location", x => x.geodata, NpgsqlDbType.Point)
                                  .Map("content", x => x.content, NpgsqlDbType.Text);
+
 
             using (var sqlConn = new NpgsqlConnection(PostgresConnectionString))
             {
                 sqlConn.Open();
+                var paramaters = sqlConn.PostgresParameters;
+                using (var cmd = new NpgsqlCommand("SET search_path = ..., public;", sqlConn))
+                {
+                    cmd.ExecuteNonQuery();
+                    paramaters = sqlConn.PostgresParameters;
+                }
 
-                for (var i = 0; i < 6000; i++)
+
+                for (var i = 0; i < 1; i++)
                 {
                     var items = new List<PostgresItem>();
-                    for (var j = 0; j < 1000; j++)
+                    for (var j = 0; j < 1; j++)
                     {
                         var newItem = CreateNewItem();
                         items.Add(newItem);

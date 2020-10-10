@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using WebApplication1.Model;
 
 namespace PerfoTest.Business
 {
@@ -13,11 +15,29 @@ namespace PerfoTest.Business
         public static HttpClient client = new HttpClient();
         public static List<long> EllapsedTimes = new List<long>();
         public static List<HttpResponseMessage> Responses = new List<HttpResponseMessage>();
-        public static Task<HttpResponseMessage> SendRequest()
+        public static Task<HttpResponseMessage> SendGetRequest()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             var result = client.GetAsync("http://localhost:6715/api/layer");
+            result.ContinueWith((x) =>
+            {
+                stopwatch.Stop();
+                var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
+                EllapsedTimes.Add(totalEllapsedTime);
+                Responses.Add(x.Result);
+            });
+
+            return result;
+        }
+        public static Task<HttpResponseMessage> SendPostRequest()
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var lostions = new List<MapPointLocation>() { new MapPointLocation() { lng = 1, lat = 2 } };
+            var result = client.PostAsJsonAsync("http://localhost:6715/api/GetSuperMarkets", lostions);
+
             result.ContinueWith((x) =>
             {
                 stopwatch.Stop();
@@ -38,7 +58,7 @@ namespace PerfoTest.Business
 
             for (int i = 0; i < count; i++)
             {
-                var newTask = SendRequest();
+                var newTask = SendGetRequest();
 
                 //Console.WriteLine($"Request {i} Sent.");
                 tasks.Add(newTask);
@@ -69,8 +89,6 @@ namespace PerfoTest.Business
             //    j++;
             //    Console.WriteLine();
             //}
-
-            Console.ReadLine();
         }
 
 
