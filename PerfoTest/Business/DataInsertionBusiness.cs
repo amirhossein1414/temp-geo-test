@@ -33,8 +33,8 @@ namespace PerfoTest.Business
             //string lngString = "51." + "235813";
 
             var arr = new double[2];
-            arr[0] = double.Parse(latString);
-            arr[1] = double.Parse(lngString);
+            arr[0] = double.Parse(lngString);
+            arr[1] = double.Parse(latString);
 
             return arr;
         }

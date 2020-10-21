@@ -141,12 +141,16 @@
     <Compile Include="Business\DataMaker.cs" />
     <Compile Include="Business\EF.cs" />
     <Compile Include="Business\GisApiRequestMaker.cs" />
+    <Compile Include="Business\GisLayerBusiness.cs" />
     <Compile Include="Business\PostgresGeoBusiness.cs" />
     <Compile Include="Business\Postgres\PostgresPoint.cs" />
     <Compile Include="Business\Postgres\QueryMaker.cs" />
     <Compile Include="Business\RequestMaker.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\GeoContext.cs" />
+    <Compile Include="Model\GeoLocation.cs" />
+    <Compile Include="Model\Layer.cs" />
+    <Compile Include="Model\LayerItem.cs" />
     <Compile Include="Model\MapPointLocation.cs" />
     <Compile Include="Model\PostgresItem.cs" />
     <Compile Include="Model\SuperMarket.cs" />

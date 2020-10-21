@@ -69,7 +69,7 @@ namespace PerfoTest.Business
             }
         }
 
-        private static PostgresItem CreateNewItem()
+        public static PostgresItem CreateNewItem()
         {
             var superMarket = dataMaker.GetNewSuperMarket();
             var randomPoint = dataMaker.RandomPointCoordinates();
