@@ -157,7 +157,8 @@ namespace PerfoTest.Business
 
         public static void AddLayerRequest()
         {
-            var geoJson = GetLayerGeoJson();
+            var featuresCount = 5;
+            var geoJson = GetLayerGeoJson(featuresCount);
             var layer = new Layer()
             {
                 Title = "Layer Title",
@@ -173,10 +174,10 @@ namespace PerfoTest.Business
             });
         }
 
-        private static string GetLayerGeoJson()
+        private static string GetLayerGeoJson(int count)
         {
             var items = new List<LayerItem>();
-            for (var j = 0; j < 1; j++)
+            for (var j = 0; j < count; j++)
             {
                 var newItem = CreateNewItem();
                 items.Add(newItem);
@@ -198,7 +199,7 @@ namespace PerfoTest.Business
         {
             var layer = new GetLayersRequest()
             {
-                LayerIds = new List<string>() { "123", "456"},
+                LayerIds = new List<string>() { "123", "456" },
                 boundingBox = new BoundingBox()
                 {
                     Coordinates = new List<GeoPoint>()
