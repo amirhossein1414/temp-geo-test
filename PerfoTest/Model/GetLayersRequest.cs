@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace PerfoTest.Model
 {
-    public class Layer
+    public class GetLayersRequest
     {
-        public string PortalLayerId { get; set; }
-        public string Title { get; set; }
-        public string GeoJson { get; set; }
+        public List<string> LayerIds { get; set; }
+        public BoundingBox boundingBox { get; set; }
     }
 }

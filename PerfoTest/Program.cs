@@ -28,6 +28,7 @@ namespace PerfoTest
             //GisApiRequestMaker.InsertLayer();
             //GisLayerBusiness.InsertBulk();
             GisLayerBusiness.AddLayerRequest();
+            //GisLayerBusiness.ReadLayerRequest();
 
 
 

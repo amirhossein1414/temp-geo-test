@@ -46,6 +46,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="GeoJSON.Net, Version=1.2.16.0, Culture=neutral, PublicKeyToken=42c00ea87f5f14d4, processorArchitecture=MSIL">
+      <HintPath>..\packages\GeoJSON.Net.1.2.19\lib\net45\GeoJSON.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -147,8 +150,11 @@
     <Compile Include="Business\Postgres\QueryMaker.cs" />
     <Compile Include="Business\RequestMaker.cs" />
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Model\BoundingBox.cs" />
     <Compile Include="Model\GeoContext.cs" />
     <Compile Include="Model\GeoLocation.cs" />
+    <Compile Include="Model\GeoPoint.cs" />
+    <Compile Include="Model\GetLayersRequest.cs" />
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\LayerItem.cs" />
     <Compile Include="Model\MapPointLocation.cs" />

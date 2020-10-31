@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using GeoJSON.Net;
+using GeoJSON.Net.Feature;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Npgsql;
 using PerfoTest.Model;
 using System;
@@ -77,11 +80,37 @@ namespace PerfoTest.Business
 
         private static LayerItem CreateNewItem()
         {
+            var objectType = GeoJSONObjectType.Point;
             var superMarket = dataMaker.GetNewSuperMarket();
             var randomPoint = dataMaker.RandomPointCoordinates();
-            superMarket["geometry"]["coordinates"] = JArray.FromObject(randomPoint);
-            var location = new GeoLocation() { Lat = randomPoint[0].ToString(), Lng = randomPoint[1].ToString() };
 
+            switch (objectType)
+            {
+                case GeoJSONObjectType.Point:
+                    superMarket["geometry"]["type"] = "Point";
+                    superMarket["geometry"]["coordinates"] = JArray.FromObject(randomPoint);
+                    break;
+                case GeoJSONObjectType.MultiPoint:
+                    superMarket["geometry"]["type"] = "MultiPoint";
+                    superMarket["geometry"]["coordinates"] = JToken.FromObject(GetMultiPoint());
+                    break;
+                case GeoJSONObjectType.LineString:
+                    superMarket["geometry"]["type"] = "LineString";
+                    superMarket["geometry"]["coordinates"] = JToken.FromObject(GetLineString());
+                    break;
+                case GeoJSONObjectType.MultiLineString:
+                    superMarket["geometry"]["type"] = "MultiLineString";
+                    superMarket["geometry"]["coordinates"] = JToken.FromObject(GetMultiLineString());
+                    break;
+                case GeoJSONObjectType.Polygon:
+                    superMarket["geometry"]["type"] = "Polygon";
+                    break;
+                case GeoJSONObjectType.MultiPolygon:
+                    superMarket["geometry"]["type"] = "MultiPolygon";
+                    break;
+            }
+
+            var location = new GeoLocation() { Lat = randomPoint[0].ToString(), Lng = randomPoint[1].ToString() };
             var superMarketJsonString = superMarket.ToString();
 
             return new LayerItem()
@@ -93,13 +122,46 @@ namespace PerfoTest.Business
             };
         }
 
+        private static List<double[]> GetLineString()
+        {
+            var lineString = new List<double[]>();
+            for (var i = 0; i < 5; i++)
+            {
+                var randomPoint = dataMaker.RandomPointCoordinates();
+                lineString.Add(randomPoint);
+            }
+            return lineString;
+        }
+
+        private static List<List<double[]>> GetMultiLineString()
+        {
+            var lineStrings = new List<List<double[]>>();
+            for (var i = 0; i < 5; i++)
+            {
+                var lineString = GetLineString();
+                lineStrings.Add(lineString);
+            }
+            return lineStrings;
+        }
+
+        private static List<double[]> GetMultiPoint()
+        {
+            var points = new List<double[]>();
+            for (var i = 0; i < 5; i++)
+            {
+                var randomPoint = dataMaker.RandomPointCoordinates();
+                points.Add(randomPoint);
+            }
+            return points;
+        }
+
         public static void AddLayerRequest()
         {
             var geoJson = GetLayerGeoJson();
             var layer = new Layer()
             {
                 Title = "Layer Title",
-                LayerId = "123",
+                PortalLayerId = Guid.NewGuid().ToString(),
                 GeoJson = geoJson
             };
 
@@ -114,7 +176,7 @@ namespace PerfoTest.Business
         private static string GetLayerGeoJson()
         {
             var items = new List<LayerItem>();
-            for (var j = 0; j < 3; j++)
+            for (var j = 0; j < 1; j++)
             {
                 var newItem = CreateNewItem();
                 items.Add(newItem);
@@ -128,6 +190,55 @@ namespace PerfoTest.Business
                     "}";
 
             return featureCollection;
+        }
+
+
+
+        public static void ReadLayerRequest()
+        {
+            var layer = new GetLayersRequest()
+            {
+                LayerIds = new List<string>() { "123", "456"},
+                boundingBox = new BoundingBox()
+                {
+                    Coordinates = new List<GeoPoint>()
+                    {
+                        new GeoPoint()
+                        {
+                            Lng="51.3361930847168",
+                            Lat="35.705959231097545"
+                        },
+                        new GeoPoint()
+                        {
+                            Lng="51.30821228027344",
+                            Lat="35.622698214535184"
+                        },
+                        new GeoPoint()
+                        {
+                            Lng="51.44073486328125",
+                            Lat="35.62381451392674"
+                        },
+                        new GeoPoint()
+                        {
+                            Lng="51.433353424072266",
+                            Lat="35.70777131894265"
+                        },
+                        new GeoPoint()
+                        {
+                            Lng="51.3361930847168",
+                            Lat="35.705959231097545"
+                        }
+                    }
+                }
+            };
+
+            var result = client.PostAsJsonAsync("https://localhost:44330/layers/GetLayer", layer);
+
+            result.ContinueWith((response) =>
+            {
+                var featureCollectionString = response.Result.Content.ReadAsStringAsync().Result;
+                var featureCollection = JsonConvert.DeserializeObject<FeatureCollection>(featureCollectionString);
+            });
         }
     }
 }
