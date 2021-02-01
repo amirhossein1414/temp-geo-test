@@ -1,0 +1,6 @@
+The BOUNDING_BOX therefore maps to:
+
+xmin = -90
+ymin = -180
+xmax = 90
+ymax = 180

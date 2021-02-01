@@ -80,7 +80,7 @@ namespace PerfoTest.Business
 
         private static LayerItem CreateNewItem()
         {
-            var objectType = GeoJSONObjectType.Point;
+            var objectType = GeoJSONObjectType.MultiPolygon;
             var superMarket = dataMaker.GetNewSuperMarket();
             var randomPoint = dataMaker.RandomPointCoordinates();
 
@@ -104,9 +104,11 @@ namespace PerfoTest.Business
                     break;
                 case GeoJSONObjectType.Polygon:
                     superMarket["geometry"]["type"] = "Polygon";
+                    superMarket["geometry"]["coordinates"] = JToken.FromObject(GetPolygon());
                     break;
                 case GeoJSONObjectType.MultiPolygon:
                     superMarket["geometry"]["type"] = "MultiPolygon";
+                    superMarket["geometry"]["coordinates"] = JToken.FromObject(GetMultiPolygon());
                     break;
             }
 
@@ -153,6 +155,36 @@ namespace PerfoTest.Business
                 points.Add(randomPoint);
             }
             return points;
+        }
+
+        private static List<List<double[]>> GetPolygon()
+        {
+            var polygon = new List<List<double[]>>();
+            var lineString = new List<double[]>();
+            var startingPoint = dataMaker.RandomPointCoordinates();
+
+            lineString.Add(startingPoint);
+            for (var i = 0; i < 5; i++)
+            {
+                var randomPoint = dataMaker.RandomPointCoordinates();
+                lineString.Add(randomPoint);
+            }
+
+            lineString.Add(startingPoint);
+            polygon.Add(lineString);
+            return polygon;
+        }
+
+        private static List<List<List<double[]>>> GetMultiPolygon()
+        {
+            var multiPolygon = new List<List<List<double[]>>>();
+            for (var i = 0; i < 5; i++)
+            {
+                var polygon = GetPolygon();
+                multiPolygon.Add(polygon);
+            }
+
+            return multiPolygon;
         }
 
         public static void AddLayerRequest()
