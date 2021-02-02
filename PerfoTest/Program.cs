@@ -24,14 +24,13 @@ namespace PerfoTest
 
             //GisApiRequestMaker.SendParallel();
             //GisApiRequestMaker.SendPostRequest();
+
             //PostgresGeoBusiness.InsertBulk();
             //GisApiRequestMaker.InsertLayer();
             //GisLayerBusiness.InsertBulk();
+
             GisLayerBusiness.AddLayerRequest();
             //GisLayerBusiness.ReadLayerRequest();
-
-
-
 
             Console.ReadLine();
         }

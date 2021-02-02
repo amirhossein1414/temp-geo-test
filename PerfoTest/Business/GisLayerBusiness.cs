@@ -6,6 +6,7 @@ using Npgsql;
 using PerfoTest.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using WebApplication1.Model;
@@ -23,7 +24,7 @@ namespace PerfoTest.Business
         {
             //sqlConn.Open();
         }
-        public static void InsertBulk()
+        public static void InsertBulk(GeoJSONObjectType featureType)
         {
 
             NpgsqlTransaction transaction = sqlConn.BeginTransaction();
@@ -34,7 +35,7 @@ namespace PerfoTest.Business
                 var items = new List<LayerItem>();
                 for (var j = 0; j < 1000; j++)
                 {
-                    var newItem = CreateNewItem();
+                    var newItem = CreateNewItem(featureType);
                     items.Add(newItem);
                 }
 
@@ -78,9 +79,9 @@ namespace PerfoTest.Business
             }
         }
 
-        private static LayerItem CreateNewItem()
+        private static LayerItem CreateNewItem(GeoJSONObjectType featureType)
         {
-            var objectType = GeoJSONObjectType.MultiPolygon;
+            var objectType = featureType;
             var superMarket = dataMaker.GetNewSuperMarket();
             var randomPoint = dataMaker.RandomPointCoordinates();
 
@@ -189,8 +190,9 @@ namespace PerfoTest.Business
 
         public static void AddLayerRequest()
         {
-            var featuresCount = 5;
-            var geoJson = GetLayerGeoJson(featuresCount);
+            var featuresCount = 100000;
+            var featureType = GeoJSONObjectType.MultiPolygon;
+            var geoJson = GetLayerGeoJson(featuresCount, featureType);
             var layer = new Layer()
             {
                 Title = "Layer Title",
@@ -198,20 +200,26 @@ namespace PerfoTest.Business
                 GeoJson = geoJson
             };
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var result = client.PostAsJsonAsync("https://localhost:44330/layers/AddLayer", layer);
 
             result.ContinueWith((response) =>
             {
+                stopwatch.Stop();
+                var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
+                Console.WriteLine($"ellapsed time for inserting {featuresCount} features : " + totalEllapsedTime + "ms");
                 var res = response.Result;
             });
         }
 
-        private static string GetLayerGeoJson(int count)
+        private static string GetLayerGeoJson(int count, GeoJSONObjectType featureType)
         {
             var items = new List<LayerItem>();
             for (var j = 0; j < count; j++)
             {
-                var newItem = CreateNewItem();
+                var newItem = CreateNewItem(featureType);
                 items.Add(newItem);
             }
             var featureList = items.Select(x => x.Content).ToList();
