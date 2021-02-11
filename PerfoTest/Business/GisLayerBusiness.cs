@@ -7,79 +7,124 @@ using PerfoTest.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
-using WebApplication1.Model;
+using LayersApi.Models.DBModels;
+using System.Linq;
+using LayersApi.Business;
 
 namespace PerfoTest.Business
 {
     public static class GisLayerBusiness
     {
         public static HttpClient client = new HttpClient();
-        private readonly static string PostgresConnectionString = "Server=192.168.30.96;Port=5432;Database=Layers;Uid=postgres;Pwd=123;";
+        //private readonly static string PostgresConnectionString = "Server=192.168.30.96;Port=5432;Database=Layers;Uid=postgres;Pwd=123;";
+        private readonly static string PostgresConnectionString = "Server=127.0.0.1;Port=5432;Database=LayersDB;Uid=postgres;Pwd=123;";
         private static NpgsqlConnection sqlConn { get; set; } = new NpgsqlConnection(PostgresConnectionString);
 
         private static DataInsertionBusiness dataMaker = new DataInsertionBusiness();
+        private static DataBaseGeometryCreator dataBaseGeometryCreator = new DataBaseGeometryCreator();
         static GisLayerBusiness()
         {
-            //sqlConn.Open();
+            sqlConn.Open();
         }
+
         public static void InsertBulk(GeoJSONObjectType featureType)
         {
-
-            NpgsqlTransaction transaction = sqlConn.BeginTransaction();
+            NpgsqlTransaction transaction = null;
             Console.WriteLine("started");
-            for (var i = 1; i <= 10000; i++)
-            {
 
-                var items = new List<LayerItem>();
-                for (var j = 0; j < 1000; j++)
-                {
-                    var newItem = CreateNewItem(featureType);
-                    items.Add(newItem);
-                }
-
-                InsertAll(items, transaction);
-                Console.WriteLine(i);
-
-                if (i % 10 == 0)
-                {
-                    transaction.Commit();
-                    Console.WriteLine("commited");
-                    transaction = sqlConn.BeginTransaction();
-                    Console.WriteLine("new tran");
-                }
-            }
-            transaction?.Commit();
-
-        }
-
-        private static string InsertAll(List<LayerItem> layerItems, NpgsqlTransaction transaction)
-        {
             try
             {
-                layerItems?.ForEach(item =>
+                for (var i = 1; i <= 100; i++)
                 {
-                    using (var cmd = new NpgsqlCommand("INSERT INTO public.\"Layers\" (id,title,content,area) " +
-                        $"VALUES (@id,@title,@content,ST_GeomFromText('Point({item?.Area?.Lng} {item?.Area?.Lat})'))", sqlConn, transaction))
+                    var items = Enumerable.Range(0, 10000).ToList().Select(x =>
                     {
-                        cmd.Parameters.AddWithValue("id", item?.Id);
-                        cmd.Parameters.AddWithValue("title", item?.Title);
-                        cmd.Parameters.AddWithValue("content", item?.Content);
-                        cmd.ExecuteNonQuery();
-                    }
-                });
+                        var newItem = CreateNewItem(featureType);
+                        return newItem;
+                    }).ToList();
 
-                return "ok";
+                    var geoJson = CreateGeoJsonFromFeaturesString(items);
+                    var newLayer = new LayerDto()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Title = "Title",
+                        GeoJson = geoJson
+                    };
+
+                    transaction = sqlConn.BeginTransaction();
+                    Console.WriteLine($"layer {i}");
+                    InsertLayerDto(newLayer, transaction);
+                    transaction.Commit();
+                }
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
-                throw ex;
+                transaction?.Rollback();
+            }
+
+            Console.WriteLine("all done...");
+        }
+
+        private static void InsertLayerDto(LayerDto layerDto, NpgsqlTransaction transaction)
+        {
+            var featureCollection = JsonConvert.DeserializeObject<FeatureCollection>(layerDto.GeoJson);
+            var features = FeatureBusiness.CreateFeatures(featureCollection, layerDto.Id);
+
+            var newLayer = new Layer()
+            {
+                Id = layerDto.Id,
+                Title = layerDto.Title,
+                Features = features
+            };
+
+            InsertLayer(newLayer, transaction);
+            InsertFeatures(newLayer, transaction);
+        }
+
+        public static void InsertLayer(Layer layer, NpgsqlTransaction transaction)
+        {
+            //var copyHelper = new PostgreSQLCopyHelper<Layer>("public", "\"Layer\"")
+            //                     .Map("\"Id\"", x => x.Id, NpgsqlDbType.Text)
+            //                     .Map("\"Title\"", x => x.Title, NpgsqlDbType.Text);
+            //copyHelper.SaveAll(sqlConn, layers);
+
+            using (var cmd = new NpgsqlCommand("INSERT INTO public.\"Layer\" (\"Id\",\"Title\")" +
+                                   $"VALUES (@Id,@Title)", sqlConn, transaction))
+            {
+                cmd.Parameters.AddWithValue("Id", layer.Id);
+                cmd.Parameters.AddWithValue("Title", layer.Title);
+                cmd.ExecuteNonQuery();
             }
         }
 
-        private static LayerItem CreateNewItem(GeoJSONObjectType featureType)
+        public static void InsertFeatures(Layer layer, NpgsqlTransaction transaction)
+        {
+            //var features = layers.SelectMany(x => x.Features).ToList();
+            //var copyHelper = new PostgreSQLCopyHelper<DbFeature>("public", "\"Feature\"")
+            //                     .Map("\"Id\"", x => x.Id, NpgsqlDbType.Text)
+            //                     .Map("\"GeojsonArea\"", x => x.GeojsonArea, NpgsqlDbType.Text)
+            //                     .Map("\"GeometryType\"", x => x.GeometryType, NpgsqlDbType.Smallint)
+            //                     .Map("\"LayerId\"", x => x.Layer.Id, NpgsqlDbType.Text)
+            //                     .Map("\"Area\"", x => x.Area, NpgsqlDbType.Point);
+            //copyHelper.SaveAll(sqlConn, features);
+            layer.Features.ForEach(feature =>
+            {
+                var geojsonFeature = JsonConvert.DeserializeObject<GeoJSON.Net.Feature.Feature>(feature.GeojsonArea);
+                var area = dataBaseGeometryCreator.GetGeometryString(geojsonFeature);
+                using (var cmd = new NpgsqlCommand("INSERT INTO public.\"Feature\" (\"Id\",\"GeojsonArea\",\"Area\",\"GeometryType\",\"LayerId\")" +
+                                    $"VALUES (@Id,@GeojsonArea,{area},@GeometryType,@LayerId)", sqlConn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("Id", feature?.Id);
+                    cmd.Parameters.AddWithValue("GeojsonArea", feature?.GeojsonArea);
+                    //cmd.Parameters.AddWithValue("Area", area);
+                    cmd.Parameters.AddWithValue("GeometryType", feature.GeometryType);
+                    cmd.Parameters.AddWithValue("LayerId", feature.Layer.Id);
+                    cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
+        private static string CreateNewItem(GeoJSONObjectType featureType)
         {
             var objectType = featureType;
             var superMarket = dataMaker.GetNewSuperMarket();
@@ -113,16 +158,8 @@ namespace PerfoTest.Business
                     break;
             }
 
-            var location = new GeoLocation() { Lat = randomPoint[0].ToString(), Lng = randomPoint[1].ToString() };
             var superMarketJsonString = superMarket.ToString();
-
-            return new LayerItem()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Title = "Title" + Guid.NewGuid().ToString(),
-                Area = location,
-                Content = superMarketJsonString
-            };
+            return superMarketJsonString;
         }
 
         private static List<double[]> GetLineString()
@@ -190,20 +227,21 @@ namespace PerfoTest.Business
 
         public static void AddLayerRequest()
         {
-            var featuresCount = 100000;
-            var featureType = GeoJSONObjectType.MultiPolygon;
+            var featuresCount = 5;
+            var featureType = GeoJSONObjectType.Point;
             var geoJson = GetLayerGeoJson(featuresCount, featureType);
-            var layer = new Layer()
+            var layer = new LayerDto()
             {
                 Title = "Layer Title",
-                PortalLayerId = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 GeoJson = geoJson
             };
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var result = client.PostAsJsonAsync("https://localhost:44330/layers/AddLayer", layer);
+            //var result = client.PostAsJsonAsync("https://localhost:44330/layers/AddLayer", layer);
+            var result = client.PostAsJsonAsync("https://localhost:5001/layers/AddLayer", layer);
 
             result.ContinueWith((response) =>
             {
@@ -211,20 +249,26 @@ namespace PerfoTest.Business
                 var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
                 Console.WriteLine($"ellapsed time for inserting {featuresCount} features : " + totalEllapsedTime + "ms");
                 var res = response.Result;
+                res.EnsureSuccessStatusCode();
             });
         }
 
-        private static string GetLayerGeoJson(int count, GeoJSONObjectType featureType)
+        public static string GetLayerGeoJson(int count, GeoJSONObjectType featureType)
         {
-            var items = new List<LayerItem>();
+            var jsonFeatures = new List<string>();
             for (var j = 0; j < count; j++)
             {
                 var newItem = CreateNewItem(featureType);
-                items.Add(newItem);
+                jsonFeatures.Add(newItem);
             }
-            var featureList = items.Select(x => x.Content).ToList();
 
-            var features = string.Join(",", featureList);
+            var featureCollection = CreateGeoJsonFromFeaturesString(jsonFeatures);
+            return featureCollection;
+        }
+
+        public static string CreateGeoJsonFromFeaturesString(List<string> jsonFeatures)
+        {
+            var features = string.Join(",", jsonFeatures);
             var featureCollection = "{" +
                     "\"type\": \"FeatureCollection\"," +
                     $"\"features\": [{features}]" +
@@ -233,16 +277,39 @@ namespace PerfoTest.Business
             return featureCollection;
         }
 
-
-
         public static void ReadLayerRequest()
         {
             var layer = new GetLayersRequest()
             {
-                LayerIds = new List<string>() { "123", "456" },
+                LayerIds = new List<string>() { /*"006be665-7422-48eb-be2c-cf647c53136a"*/ },
                 boundingBox = new BoundingBox()
                 {
-                    Coordinates = new List<GeoPoint>()
+                    Coordinates = GetTehranCoordinates()
+                }
+            };
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //var result = client.PostAsJsonAsync("https://localhost:44330/layers/GetLayer", layer);
+            var result = client.PostAsJsonAsync("https://localhost:5001/layers/GetLayer", layer);
+
+            result.ContinueWith((response) =>
+            {
+                stopwatch.Stop();
+
+                var featureCollectionString = response.Result.Content.ReadAsStringAsync().Result;
+                var featureCollection = JsonConvert.DeserializeObject<FeatureCollection>(featureCollectionString);
+                var res = response.Result;
+                res.EnsureSuccessStatusCode();
+
+                var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
+                Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime/1000}sec");
+            });
+        }
+
+        private static List<GeoPoint> GetTehranCoordinates()
+        {
+            return new List<GeoPoint>()
                     {
                         new GeoPoint()
                         {
@@ -269,17 +336,7 @@ namespace PerfoTest.Business
                             Lng="51.3361930847168",
                             Lat="35.705959231097545"
                         }
-                    }
-                }
-            };
-
-            var result = client.PostAsJsonAsync("https://localhost:44330/layers/GetLayer", layer);
-
-            result.ContinueWith((response) =>
-            {
-                var featureCollectionString = response.Result.Content.ReadAsStringAsync().Result;
-                var featureCollection = JsonConvert.DeserializeObject<FeatureCollection>(featureCollectionString);
-            });
+                    };
         }
     }
 }

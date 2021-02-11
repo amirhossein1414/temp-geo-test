@@ -48,29 +48,6 @@ namespace PerfoTest.Business
             return result;
         }
 
-        public static void InsertLayer()
-        {
-
-            var items = Enumerable.Range(1, 1000).Select((x) => new LayerItem()
-            {
-                Content = "Content",
-                Id = Guid.NewGuid().ToString(),
-                Title = "Title",
-                Area = new GeoLocation() { Lng = "1", Lat = "2" }
-            }).ToList();
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var result = client.PostAsJsonAsync("http://localhost:7000/layers/additems", items);
-
-            result.ContinueWith((x) =>
-            {
-                stopwatch.Stop();
-                var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
-                var stringRes = x.Result.Content.ReadAsStringAsync().Result;
-            });
-        }
-
         public async static void SendParallel()
         {
             var count = 30;

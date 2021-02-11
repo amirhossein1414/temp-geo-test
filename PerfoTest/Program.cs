@@ -10,6 +10,7 @@ using Microsoft.SqlServer.Types;
 using PerfoTest.Business;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using GeoJSON.Net;
 
 namespace PerfoTest
 {
@@ -27,10 +28,11 @@ namespace PerfoTest
 
             //PostgresGeoBusiness.InsertBulk();
             //GisApiRequestMaker.InsertLayer();
-            //GisLayerBusiness.InsertBulk();
+            //**GisLayerBusiness.InsertBulk(GeoJSONObjectType.Point);
 
-            GisLayerBusiness.AddLayerRequest();
-            //GisLayerBusiness.ReadLayerRequest();
+
+            //GisLayerBusiness.AddLayerRequest();
+            GisLayerBusiness.ReadLayerRequest();
 
             Console.ReadLine();
         }
