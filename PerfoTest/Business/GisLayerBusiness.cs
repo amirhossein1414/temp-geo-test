@@ -277,6 +277,66 @@ namespace PerfoTest.Business
             return featureCollection;
         }
 
+        public static void ReadLayerBenchmark()
+        {
+            var request = new GetLayersRequest()
+            {
+                LayerIds = new List<string>() { /*"006be665-7422-48eb-be2c-cf647c53136a"*/ },
+                boundingBox = new BoundingBox()
+                {
+                    Coordinates = GetTehranCoordinates()
+                }
+            };
+
+            var boundingBoxString = QueryMaker.GetPolygonQueryString(request.boundingBox);
+            var queryString = QueryMaker.GetSearchWithinPolygonQueryString(request, boundingBoxString, "200");
+            var jsonFeatures = new List<string>();
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            using (NpgsqlCommand command = new NpgsqlCommand(queryString, sqlConn))
+            {
+                NpgsqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    jsonFeatures.Add(reader[0].ToString());
+                }
+            }
+
+            var featureCollection = CreateFeatureCollection(jsonFeatures);
+            stopwatch.Stop();
+            var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
+            Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime / 1000}sec");
+        }
+
+        public static void NetworkBenchmark()
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var result = client.GetAsync("https://localhost:5001/layers/index");
+
+            result.ContinueWith((response) =>
+            {
+                stopwatch.Stop();
+                var res = response.Result;
+                res.EnsureSuccessStatusCode();
+                var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
+                Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime / 1000}sec");
+            });
+        }
+
+        private static string CreateFeatureCollection(List<string> featuresString)
+        {
+            var features = string.Join(",", featuresString);
+            var featureCollection = "{" +
+                    "\"type\": \"FeatureCollection\"," +
+                    $"\"features\": [{features}]" +
+                    "}";
+
+            return featureCollection;
+        }
+
         public static void ReadLayerRequest()
         {
             var layer = new GetLayersRequest()

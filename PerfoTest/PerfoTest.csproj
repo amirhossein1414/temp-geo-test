@@ -153,6 +153,7 @@
     <Compile Include="Business\PostgresGeoBusiness.cs" />
     <Compile Include="Business\Postgres\PostgresPoint.cs" />
     <Compile Include="Business\Postgres\QueryMaker.cs" />
+    <Compile Include="Business\QueryMaker.cs" />
     <Compile Include="Business\RequestMaker.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\BoundingBox.cs" />
