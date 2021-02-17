@@ -11,6 +11,8 @@ using System.Net.Http;
 using LayersApi.Models.DBModels;
 using System.Linq;
 using LayersApi.Business;
+using System.IO;
+using NpgsqlTypes;
 
 namespace PerfoTest.Business
 {
@@ -35,7 +37,7 @@ namespace PerfoTest.Business
 
             try
             {
-                for (var i = 1; i <= 100; i++)
+                for (var i = 1; i <= 500; i++)
                 {
                     var items = Enumerable.Range(0, 10000).ToList().Select(x =>
                     {
@@ -48,11 +50,14 @@ namespace PerfoTest.Business
                     {
                         Id = Guid.NewGuid().ToString(),
                         Title = "Title",
-                        GeoJson = geoJson
+                        GeoJson = geoJson,
+                        //IconContent = File.ReadAllBytes(@"C:\Users\A1.DESKTOP-C80Q36T\Pictures\leo-low-q.jpg"),
+                        //IconFileName = "leo-low-q",
+                        //IconFileExtention = "jpg"
                     };
 
-                    transaction = sqlConn.BeginTransaction();
                     Console.WriteLine($"layer {i}");
+                    transaction = sqlConn.BeginTransaction();
                     InsertLayerDto(newLayer, transaction);
                     transaction.Commit();
                 }
@@ -61,7 +66,6 @@ namespace PerfoTest.Business
             {
                 transaction?.Rollback();
             }
-
             Console.WriteLine("all done...");
         }
 
@@ -79,6 +83,7 @@ namespace PerfoTest.Business
 
             InsertLayer(newLayer, transaction);
             InsertFeatures(newLayer, transaction);
+            //InsertIcon(layerDto, transaction);
         }
 
         public static void InsertLayer(Layer layer, NpgsqlTransaction transaction)
@@ -93,6 +98,25 @@ namespace PerfoTest.Business
             {
                 cmd.Parameters.AddWithValue("Id", layer.Id);
                 cmd.Parameters.AddWithValue("Title", layer.Title);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static void InsertIcon(LayerDto layerDto, NpgsqlTransaction transaction)
+        {
+            //var copyHelper = new PostgreSQLCopyHelper<Layer>("public", "\"Layer\"")
+            //                     .Map("\"Id\"", x => x.Id, NpgsqlDbType.Text)
+            //                     .Map("\"Title\"", x => x.Title, NpgsqlDbType.Text);
+            //copyHelper.SaveAll(sqlConn, layers);
+
+            using (var cmd = new NpgsqlCommand("INSERT INTO public.\"LayerIcon\" (\"Id\",\"FileContent\",\"FileExtention\",\"FileName\",\"LayerId\")" +
+                                   $"VALUES (@Id,@FileContent,@FileExtention,@FileName,@LayerId)", sqlConn, transaction))
+            {
+                cmd.Parameters.AddWithValue("Id", Guid.NewGuid().ToString());
+                cmd.Parameters.AddWithValue("FileContent", NpgsqlDbType.Bytea, layerDto.IconContent);
+                cmd.Parameters.AddWithValue("FileExtention", layerDto.IconFileExtention);
+                cmd.Parameters.AddWithValue("FileName", layerDto.IconFileName);
+                cmd.Parameters.AddWithValue("LayerId", layerDto.Id);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -116,9 +140,9 @@ namespace PerfoTest.Business
                 {
                     cmd.Parameters.AddWithValue("Id", feature?.Id);
                     cmd.Parameters.AddWithValue("GeojsonArea", feature?.GeojsonArea);
-                    //cmd.Parameters.AddWithValue("Area", area);
                     cmd.Parameters.AddWithValue("GeometryType", feature.GeometryType);
                     cmd.Parameters.AddWithValue("LayerId", feature.Layer.Id);
+
                     cmd.ExecuteNonQuery();
                 }
             });
@@ -363,7 +387,7 @@ namespace PerfoTest.Business
                 res.EnsureSuccessStatusCode();
 
                 var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
-                Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime/1000}sec");
+                Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime / 1000}sec");
             });
         }
 

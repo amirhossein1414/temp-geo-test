@@ -34,7 +34,7 @@ namespace PerfoTest
             //GisLayerBusiness.AddLayerRequest();
             //GisLayerBusiness.ReadLayerRequest();
             //**GisLayerBusiness.ReadLayerBenchmark();
-            GisLayerBusiness.NetworkBenchmark();
+            //*GisLayerBusiness.NetworkBenchmark();
 
             Console.ReadLine();
         }

@@ -146,6 +146,7 @@
     <Compile Include="Business\DataBaseGeometryCreator.cs" />
     <Compile Include="Business\DataInsertionBusiness.cs" />
     <Compile Include="Business\DataMaker.cs" />
+    <Compile Include="Business\Diagnose.cs" />
     <Compile Include="Business\EF.cs" />
     <Compile Include="Business\FeatureBusiness.cs" />
     <Compile Include="Business\GisApiRequestMaker.cs" />
