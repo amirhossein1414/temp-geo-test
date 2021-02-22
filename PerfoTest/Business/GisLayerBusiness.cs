@@ -251,9 +251,11 @@ namespace PerfoTest.Business
 
         public static void AddLayerRequest()
         {
-            var featuresCount = 5;
+            var featuresCount = 3;
             var featureType = GeoJSONObjectType.Point;
             var geoJson = GetLayerGeoJson(featuresCount, featureType);
+            //var geoJson = File.ReadAllText(@"C:\Users\A1.DESKTOP-C80Q36T\Desktop\layer.json");
+
             var layer = new LayerDto()
             {
                 Title = "Layer Title",
@@ -261,11 +263,13 @@ namespace PerfoTest.Business
                 GeoJson = geoJson
             };
 
+            //SetLayerIcon(layer);
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             //var result = client.PostAsJsonAsync("https://localhost:44330/layers/AddLayer", layer);
-            var result = client.PostAsJsonAsync("https://localhost:5001/layers/AddLayer", layer);
+            var result = client.PostAsJsonAsync("http://localhost:5001/layers/AddLayer", layer);
 
             result.ContinueWith((response) =>
             {
@@ -275,6 +279,14 @@ namespace PerfoTest.Business
                 var res = response.Result;
                 res.EnsureSuccessStatusCode();
             });
+        }
+
+        private static void SetLayerIcon(LayerDto layer)
+        {
+            layer.IconFileExtention = "jpg";
+            layer.IconFileName = "leo";
+            var fileBytes = File.ReadAllBytes(@"C:\Users\A1.DESKTOP-C80Q36T\Pictures\leo-low-q.jpg");
+            layer.IconContent = Convert.ToBase64String(fileBytes);
         }
 
         public static string GetLayerGeoJson(int count, GeoJSONObjectType featureType)
@@ -374,17 +386,17 @@ namespace PerfoTest.Business
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            //var result = client.PostAsJsonAsync("https://localhost:44330/layers/GetLayer", layer);
-            var result = client.PostAsJsonAsync("https://localhost:5001/layers/GetLayer", layer);
+            //var result = client.PostAsJsonAsync("http://localhost:44330/layers/GetLayer", layer);
+            var result = client.PostAsJsonAsync("http://localhost:5001/layers/SearchLayersPoints", layer);
 
             result.ContinueWith((response) =>
             {
                 stopwatch.Stop();
+                var res = response.Result;
+                res.EnsureSuccessStatusCode();
 
                 var featureCollectionString = response.Result.Content.ReadAsStringAsync().Result;
                 var featureCollection = JsonConvert.DeserializeObject<FeatureCollection>(featureCollectionString);
-                var res = response.Result;
-                res.EnsureSuccessStatusCode();
 
                 var totalEllapsedTime = stopwatch.ElapsedMilliseconds;
                 Console.WriteLine($"ellapsed time : " + totalEllapsedTime + $"ms, {totalEllapsedTime / 1000}sec");
